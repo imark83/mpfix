@@ -1,16 +1,14 @@
-	.text
-	.globl _fpadd
-_fpadd:
+.text
+
+.globl fixadd
+.type fixadd, @function
+# char int fixadd (fix_t *rop, fix_t op1, fix_t op2);    returns overflow carry (0 or 1)
+fixadd:
 	pushq	%rbx	
 
-	#compute %rcx = SIZE/8, size stored in %ecx
-	movq	%rdx, %rbx		# preserve %rdx (pointer to op1->data)
-	movl	%ecx, %eax		# put in %eax total size of op1 in bytes
-	xorl	%edx, %edx		# set %edx = 0
-	movl	$0x8, %ecx		# set %ecx = 8
-	idivl	%ecx			# %eax = (%edx:%eax) / 8  (we ignore remainder)
-	movl	%eax, %ecx		# %ecx = size/8 (number of long ints)
-	movq	%rbx, %rdx		# restore %rdx
+	#compute %rcx = SIZE, size stored in %ecx
+	movl	%ecx, %ecx			# put in %eax total size of op1 in quad words
+
 
 	
 	# we have %rdx ponter to op1->data
@@ -20,38 +18,111 @@ _fpadd:
 
 
 	# summation loop
-	# we use %rcx as counter. Start at (size/8 - 1) 
-	subq	$0x1, %rcx		
+	# we use %rcx as counter. Start at (size) 
+	movq	$0x1, %rsi			# overflow flag to return
 
-	movq	(%rdx, %rcx, 8), %rdi	# %rdi = op1->data[size-1]
-	movq	%rdi, (%rbx, %rcx, 8)   # rop->data[size-1] = %rdi
+	movq	-8(%rdx, %rcx, 8), %rdi		# %rdi = op1->data[size-1]
+	movq	%rdi, -8(%rbx, %rcx, 8) 	# rop->data[size-1] = %rdi
+	
+	movq	-8(%r8, %rcx, 8), %rdi		# %rdi = op2->data[size-1]
+	addq	%rdi, -8(%rbx, %rcx, 8)		# rop->data[size-1] += %rdi
 
-	movq	(%r8, %rcx, 8), %rdi	# %rdi = op2->data[size-1]
-	addq	%rdi, (%rbx, %rcx, 8)	# rop->data[size-1] += %rdi
-
-	cmpl	$0x0, %ecx		# check if finished (size = 8)
-	je	LAddEnd			
+	decq	%rcx
+	jz	LAddEnd			
 LAddLoop:
-	subq	$0x1, %rcx		# substract 1 from counter and repeat
-	movq	(%rdx, %rcx, 8), %rdi
-	movq	%rdi, (%rbx, %rcx, 8)
-	movq	(%r8, %rcx, 8), %rdi
-	adcq	%rdi, (%rbx, %rcx, 8)	# we add with carry!
-	cmpl	$0x0, %ecx
-	jg	LAddLoop
+	movq	-8(%rdx, %rcx, 8), %rdi		# %rdi = op1->data[i-1]
+	movq	%rdi, -8(%rbx, %rcx, 8)
+	movq	-8(%r8, %rcx, 8), %rdi
+	adcq	%rdi, -8(%rbx, %rcx, 8)		# we add with carry!
+	movq	$0x0, %rax
+	cmovoq	%rsi, %rax			# store in %rax overflow flag
+	decq	%rcx				# substract 1 from counter and repeat
+	jnz	LAddLoop
 LAddEnd:
 	popq	%rbx
 	ret
 
-#	cmpl	$0, (%rbx)
-#	je	L1
-#	movl	$0, %eax
-#L3:
-#	movq	8(%rbx), %rdx
-#	movq	$0, (%rdx,%rax,8)
-#	addq	$1, %rax
-#	mov	(%rbx), %edx
-#	cmpq	%rax, %rdx
-#	jg	L3
-#L1:
-#	popq	%rbx
+
+
+.globl fixsub
+.type fixsub, @function
+# char fixsub (fix_t *rop, fix_t op1, fix_t op2);    returns overflow carry (0 or 1)
+fixsub:
+	pushq	%rbx	
+
+
+	#compute %rcx = SIZE, size stored in %ecx
+	movl	%ecx, %ecx			# put in %eax total size of op1 in quad words
+
+	
+	# we have %rdx ponter to op1->data
+	# we have %r8  pointer to op2->data
+	# set %ebx pointer to rop->data
+	movq	8(%rdi), %rbx	
+
+
+	# summation loop
+	# we use %rcx as counter. Start at (size) 
+	movq	$0x1, %rsi			# overflow flag to return
+
+	movq	-8(%rdx, %rcx, 8), %rdi		# %rdi = op1->data[size-1]
+	movq	%rdi, -8(%rbx, %rcx, 8) 	# rop->data[size-1] = %rdi
+	
+	movq	-8(%r8, %rcx, 8), %rdi		# %rdi = op2->data[size-1]
+	subq	%rdi, -8(%rbx, %rcx, 8)		# rop->data[size-1] += %rdi
+
+	decq	%rcx
+	jz	LSubEnd			
+LSubLoop:
+	movq	-8(%rdx, %rcx, 8), %rdi		# %rdi = op1->data[i-1]
+	movq	%rdi, -8(%rbx, %rcx, 8)
+	movq	-8(%r8, %rcx, 8), %rdi
+	sbbq	%rdi, -8(%rbx, %rcx, 8)		# we sub with carry!
+	movq	$0x0, %rax
+	cmovoq	%rsi, %rax			# store in %rax overflow flag
+	decq	%rcx				# substract 1 from counter and repeat
+	jnz	LSubLoop
+LSubEnd:
+	popq	%rbx
+	ret
+
+
+.globl fixmul_long
+.type fixmul_long, @function
+# void fixmul_long (fix_t *rop, fix_t op1, long op2);
+fixmul_long:
+	pushq	%rbx
+	# allocate free space for temp storage
+	pushq	%rdi				# preserve rdi
+	pushq	%rsi				# preserve rsi
+	pushq	%rdx				# preserve rdx
+	pushq	%rcx				# preserve rcx
+	pushq	%r8				# preserve r8
+	movl	%edx, %edi			# rdi = size
+	sall	$3, %edi			# multiply by 8 bytes per block
+	call	malloc
+	popq	%r8
+	popq	%rcx
+	popq	%rdx
+	popq	%rsi
+	popq	%rdi
+
+	movq	%rax, %rdi
+	call	free
+
+
+	#compute %rcx = SIZE, size stored in %ecx
+	movl	%ecx, %ecx		# put in %eax total size of op1 in quad words
+
+
+
+LMulLongEnd:
+	popq	%rbx
+	ret
+
+
+
+
+
+
+
