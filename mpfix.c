@@ -38,11 +38,11 @@ int main () {
 	z.data[1] = 0;
 	z.data[2] = 1;
 
-	y.data[0] = (long int) 1 << 63;
-	y.data[1] = 0;
-	y.data[2] = 0;
+	y.data[0] = ((unsigned long int) 1 << 63) - (unsigned long int) 1;
+	y.data[1] = -1;
+	y.data[2] = -1;
 
-	fixsub (&x, y, z);
+	fixadd (&y, y, z);
 
 	fixmul_long (&a, &x, z, 2);
 	
