@@ -125,104 +125,89 @@ LSubEnd:
 
 
 
-.globl fixmul_long
-.type fixmul_long, @function
-fixmul_long:
 
-loop:	
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0x7F,	%al
-	movb	$0xFE,	%bl
-	mulb	%bl
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0x7F,	%al
-	movb	$0xFE,	%bl
-	imulb	%bl
 
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0x7F,	%al
-	movb	$0x80,	%bl
-	mulb	%bl
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0x7F,	%al
-	movb	$0x80,	%bl
-	imulb	%bl
+auxAdd:
+	# auxiliar function to add integers of size twice the size of fix_t
+	# this function is called by fixmul_int function
 
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0xFF,	%al
-	movb	$0xFE,	%bl
-	mulb	%bl
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0xFF,	%al
-	movb	$0xFE,	%bl
-	imulb	%bl
 
-	jmp	loop
-
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0xFF,	%al
-	movb	$0xFF,	%bl
-	mulb	%bl
-	xorq	%rax, %rax
-	xorq	%rbx, %rbx
-	movb	$0xFF,	%al
-	movb	$0xFF,	%bl
-	imulb	%bl
+	ret
 
 
 
+.globl fixmul_int
+.type fixmul_int, @function
+fixmul_int:
 
 	# roph:ropl = op1 * op2
-	# char int fixmul_long (unsigned long int *roph, fix_t *ropl, fix_t op1, unsigned long int op2); returns overflow flag (0 or 1)
-	# must preserve value of op2. op1 can be override (rop -> &op1)
+	# char fixmul_int (mp_int *rop, mp_int *op1, mp_int *op2, unsigned int size);
+	# rop has 2*size blocks
+	# op1 and op2 have size blocks
+	# must preserve value of op2 and op1.
 
 	#########################################
 	# 
 	# WORK FRAME
 	#
-	# r10 -> rop->data
-	# rdx -> op1.data
-	# r8  -> op2.data
-	# rcx -> size in quad words (also counter)
+	# rdi -> *rop
+	# rsi -> *op1
+	# r8  -> *op2 (initially stored in rdx)
+	# rsp -> *aux data
+	# rcx -> size in quad words (also counter (i))
+	# r9  -> size in quad words (also counter (j))
+	# r10 -> auxiliar index (k)
+	# r11 -> size in quad words (backup)
+	# rax -> for mul arguments
+	# rdx -> for mul arguments
 	# 
 	#########################################
+	
+	# mov rdx to r8
+	movq	%rdx, %r8
 
-	pushq	%rbx
-	# allocate free space for temp storage
-	pushq	%rdi				# preserve rdi
-	pushq	%rsi				# preserve rsi
-	pushq	%rdx				# preserve rdx
-	pushq	%rcx				# preserve rcx
-	pushq	%r8				# preserve r8
-	movl	%edx, %edi			# rdi = size
-	sall	$3, %edi			# multiply by 8 bytes per block
-	call	malloc
-	popq	%r8				# restore r8
-	popq	%rcx				# restore rcx
-	popq	%r10				# restore rdx on r10
-	popq	%rsi				# restore rsi
-						# we leave &rop on stack
+	# backup size value
+	movq	%rcx, %r11			# r11 = size
 
-	movq	%rax, %r9
-
-	movq	%rax, %rdi
-	call	free
+	# allocate memory for aux (2*size blocks) in stack
+	salq	$0x4, %r11			# r11 = 2*size*8 bytes
+	subq	%r11, %rsp			# stack allocated
+	sarq	$0x4, %r11			# restore r11
 
 
-	#compute %rcx = SIZE, size stored in %ecx
-	movl	%ecx, %ecx		# put in %eax total size of op1 in quad words
+	# initialize result and aux with 0
+LMulIntLoop0:
+	movq	$0x0, -8(%rdi, %rcx, 8)
+	movq	$0x0, -8(%rsp, %rcx, 8)
+	decq	%rcx
+	jnz	LMulIntLoop0
+	movq	%r11, %rcx			# restore counter
 
 
 
-LMulLongEnd:
-	popq	%rbx
+LMulIntLoopI:
+	movq	%r11, %r9	# reinitialize second counter
+LMulIntLoopJ:
+	# k = i+j+1
+	movq	%rcx, %r10	
+	addq	%r9, %r10
+	decq	%r10		
+
+	addq	%rcx, -8(%rsp, %r10, 8)
+	addq	%r9, -8(%rsp, %r10, 8)
+	
+	dec	%r9
+	jnz	LMulIntLoopJ
+
+	dec	%rcx
+	jnz	LMulIntLoopI
+
+
+
+LMulIntEnd:
+	# free stack
+	salq	$0x4, %r11			# r11 = 2*size*8 bytes
+	addq	%r11, %rsp			# stack freed
 	ret
 
 

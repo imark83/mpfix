@@ -24,8 +24,8 @@ void fixfree (fix_t x) {
 
 char fixadd (fix_t *rop, fix_t op1, fix_t op2);
 void fixsub (fix_t *rop, fix_t op1, fix_t op2);
-void fixmul_long (unsigned long int *roph, fix_t *ropl, fix_t op1, long int op2);
-
+char fixmul_int (unsigned long int *rop, unsigned long int *op1, 
+		unsigned long int *op2, unsigned int size);
 
 int main () {
 	unsigned long int a;
@@ -34,17 +34,13 @@ int main () {
 	fixinit (&y, 3, 4);	
 	fixinit (&z, 3, 4);
 
-	z.data[0] = 0;
-	z.data[1] = 0;
-	z.data[2] = 1;
+	y.data[0] = -5;
+	y.data[1] = -6;
+	y.data[2] = -7;
 
-	y.data[0] = ((unsigned long int) 1 << 63) - (unsigned long int) 1;
-	y.data[1] = -1;
-	y.data[2] = -1;
+	//fixadd (&y, y, z);
 
-	fixadd (&y, y, z);
-
-	fixmul_long (&a, &x, z, 2);
+	fixmul_int (y.data, NULL, NULL, 3);
 	
 	
 	fixfree (x);
