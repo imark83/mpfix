@@ -34,13 +34,17 @@ int main () {
 	fixinit (&y, 3, 4);	
 	fixinit (&z, 3, 4);
 
-	y.data[0] = -5;
-	y.data[1] = -6;
-	y.data[2] = -7;
+	y.data[2] = (long int) 1 << 40;
+	y.data[1] = 10;
+	y.data[0] = 100;
+	z.data[2] = (long int) 1 << 40;
+	z.data[1] = 2;
+	z.data[0] = 1;
+	
 
 	//fixadd (&y, y, z);
 
-	fixmul_int (y.data, NULL, NULL, 3);
+	fixmul_int (x.data, y.data, z.data, 3);
 	
 	
 	fixfree (x);

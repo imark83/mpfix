@@ -175,13 +175,23 @@ fixmul_int:
 	sarq	$0x4, %r11			# restore r11
 
 
-	# initialize result and aux with 0
+	# initialize  aux with 0
+	salq	$0x1, %rcx			# rcx = 2*size
 LMulIntLoop0:
-	movq	$0x0, -8(%rdi, %rcx, 8)
 	movq	$0x0, -8(%rsp, %rcx, 8)
 	decq	%rcx
 	jnz	LMulIntLoop0
-	movq	%r11, %rcx			# restore counter
+	movq	%r11, %rcx			# restore counter %rcx
+
+
+
+
+	# initialize  result with 0
+LMulIntLoop1:
+	movq	$0x0, -8(%rdi, %rcx, 8)
+	decq	%rcx
+	jnz	LMulIntLoop1
+	movq	%r11, %rcx			# restore counter %rcx
 
 
 
@@ -193,9 +203,17 @@ LMulIntLoopJ:
 	addq	%r9, %r10
 	decq	%r10		
 
-	addq	%rcx, -8(%rsp, %r10, 8)
-	addq	%r9, -8(%rsp, %r10, 8)
-	
+	movq	-8(%rsi, %rcx, 8), %rax
+	movq	-8(%r8, %r9, 8), %rdx
+	mulq	%rdx
+
+	movq	%rax, -8(%rsp, %r10, 8)
+	movq	%rdx, -16(%rsp, %r10, 8)
+
+
+	movq	$0x0, (%rsp, %r10, 8)
+	movq	$0x0, -8(%rsp, %r10, 8)
+
 	dec	%r9
 	jnz	LMulIntLoopJ
 
