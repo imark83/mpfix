@@ -1,8 +1,8 @@
 .text
 
-.globl fixadd
-.type fixadd, @function
-fixadd:
+.globl ubigintAdd
+.type ubigintAdd, @function
+ubigintAdd:
 
 	# rop = op1 + op2
 	# char int fixadd (fix_t *rop, fix_t op1, fix_t op2);    returns overflow flag (0 or 1)
@@ -45,7 +45,7 @@ fixadd:
 
 	decq	%rcx
 	jz	LAddEnd			
-LAddLoop:
+AddLoop:
 	movq	-8(%rdx, %rcx, 8), %rdi		# %rdi = op1->data[i-1]
 	movq	%rdi, -8(%r10, %rcx, 8)
 
@@ -201,7 +201,6 @@ LMulIntLoopJ:
 	# k = i+j+1
 	movq	%rcx, %r10	
 	addq	%r9, %r10
-	decq	%r10		
 
 	movq	-8(%rsi, %rcx, 8), %rax
 	movq	-8(%r8, %r9, 8), %rdx
@@ -211,8 +210,30 @@ LMulIntLoopJ:
 	movq	%rdx, -16(%rsp, %r10, 8)
 
 
-	movq	$0x0, (%rsp, %r10, 8)
+
+
+	# add auxiliar result to cumulated result. rax and rdx as sum register and counter
+	movq	%r11, %rdx			# counter register
+
+	leaq	(%rdx, %r11), %rax
+	movq	-8(%rsp, %rax, 8), %rax		# rax = aux[2*size-1]
+	addq	%rax, -8(%rdi, %rdx, 8)		# rop->data[2*size-1] += rax
+	
+	decq	%rdx
+	jz	LMulIntLoop2End	
+LMulIntLoop2:
+	leaq	(%rdx, %r11), %rax		# rax = 2*i-1
+	movq	-8(%rsp, %rax, 8), %rax		# rax = aux[counter-1]
+	adcq	%rax, -8(%rdi, %rdx, 8)		# we add with carry!
+
+	decq	%rdx				# substract 1 from counter and repeat
+	jnz	LMulIntLoop2
+LMulIntLoop2End:
+	
+
+	# restore aux variable to 0
 	movq	$0x0, -8(%rsp, %r10, 8)
+	movq	$0x0, -16(%rsp, %r10, 8)
 
 	dec	%r9
 	jnz	LMulIntLoopJ

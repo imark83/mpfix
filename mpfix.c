@@ -1,55 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-typedef struct {
-	unsigned int size;		// TOTAL NUMBER OF QUAD WORDS.
-	unsigned int prec;		// NUMBER OF BYTES OF DECIMAL PART
-	unsigned long int *data;	// POINTER TO DATA
-} fix_t;
+typedef unsigned long int *ubigint_t;
+typedef unsigned long int *bigint_t;
 
 
-void fixinit (fix_t *x, unsigned int size, unsigned int prec) {
-	x->size = size;
-	x->prec = prec;
-	x->data = (unsigned long int*) malloc (8*size);
+void bigintInit (bigint_t *x, int size) {
+	*x = (unsigned long int*) malloc (8*size);
 	int i;
-	for (i=0; i<x->size; i++)
-		x->data[i] = 0;
-}
-void fixfree (fix_t x) {
-	free (x.data);
+	for (i=0; i<size; i++)
+		(*x)[i] = 0;
 }
 
 
-char fixadd (fix_t *rop, fix_t op1, fix_t op2);
-void fixsub (fix_t *rop, fix_t op1, fix_t op2);
-char fixmul_int (unsigned long int *rop, unsigned long int *op1, 
-		unsigned long int *op2, unsigned int size);
+char ubigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+char ubigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+void ubigintMul (ubigint_t *roph, ubigint_t ropl, ubigint_t op1, ubigint_t op2, int size);
 
 int main () {
 	unsigned long int a;
-	fix_t x, y, z;
-	fixinit (&x, 3, 4);	
-	fixinit (&y, 3, 4);	
-	fixinit (&z, 3, 4);
+	ubigint_t x, y, z;
+	bigintInit (&x, 3);
+	bigintInit (&y, 3);
+	bigintInit (&z, 3);
 
-	y.data[2] = (long int) 1 << 40;
-	y.data[1] = 10;
-	y.data[0] = 100;
-	z.data[2] = (long int) 1 << 40;
-	z.data[1] = 2;
-	z.data[0] = 1;
+	y[2] = 0xe6d9a106746f5902;
+	y[1] = 0x5b75e09706287ce2;
+	y[0] = 0x87fe958ea78b2bff;
+	z[2] = 0x6fc4eae712536c35;
+	z[1] = 0x1ce9ae78b2be6d98;
+	z[0] = 0xe6d9a1e9581256d9;
 	
 
-	//fixadd (&y, y, z);
+	ubigintSub (&x, y, z, 3);
 
-	fixmul_int (x.data, y.data, z.data, 3);
+	//fixmul_int (x.data, y.data, z.data, 3);
 	
 	
-	fixfree (x);
-	fixfree (y);
-	fixfree (z);
+	free (x);
+	free (y);
+	free (z);
 
 
 }
