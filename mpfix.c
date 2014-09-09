@@ -38,6 +38,24 @@ void bigintMul (ubigint_t *roph, bigint_t *ropl, ubigint_t op1, ubigint_t op2, i
 
 }
 
+char* ubigintToStringX (ubigint_t op, int size) {
+	char *rop = (char*) malloc (16*size+3);
+	int i;
+	rop[0] = '0';
+	rop[1] = 'x';
+	for (i=0; i<size; i++)
+		sprintf (16*i+2+rop, "%lx", op[i]);
+	op[16*size+2] = '\0';
+	return rop;
+}
+
+
+char* ubigintToStringD (ubigint op, int size) {
+	int ndigits = (int) floor (64.0*size*0.301029995663981) + 1;
+	char *rop = 
+
+}
+
 int main () {
 	unsigned long int a;
 	ubigint_t xh, x, y, z;
@@ -52,6 +70,7 @@ int main () {
 	z[1] = 0xe49073144c5db335;
 	z[2] = 0x2beb817fad246b83;
 	
+	printf ("y = %s\n", ubigintToStringX (y,3));
 
 	//ubigintSub (&y, z, y, 3);
 
