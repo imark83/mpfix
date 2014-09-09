@@ -15,26 +15,47 @@ void bigintInit (bigint_t *x, int size) {
 
 char ubigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
 char ubigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
-void ubigintMul (ubigint_t *roph, ubigint_t ropl, ubigint_t op1, ubigint_t op2, int size);
+void ubigintMul (ubigint_t *roph, ubigint_t *ropl, ubigint_t op1, ubigint_t op2, int size);
+void bigintMul (ubigint_t *roph, bigint_t *ropl, ubigint_t op1, ubigint_t op2, int size) {
+	ubigint_t auxh, auxl;
+	bigintInit (&auxh, size);
+	bigintInit (&auxl, size);
+
+	ubigintMul (&auxh, &auxl, op1, op2, size);
+	if (op1[0]>>63 == 1)
+		ubigintSub (&auxh, auxh, op2, size);
+	if (op1[1]>>63 == 1)
+		ubigintSub (&auxh, auxh, op1, size);
+
+	int i;
+	for (i=0; i<size; i++) {
+		(*roph)[i] = auxh[i];
+		(*ropl)[i] = auxl[i];
+	}
+
+	free (auxh);
+	free (auxl);
+
+}
 
 int main () {
 	unsigned long int a;
-	ubigint_t x, y, z;
+	ubigint_t xh, x, y, z;
+	bigintInit (&xh, 3);
 	bigintInit (&x, 3);
 	bigintInit (&y, 3);
 	bigintInit (&z, 3);
-
-	y[2] = 0xe6d9a106746f5902;
-	y[1] = 0x5b75e09706287ce2;
-	y[0] = 0x87fe958ea78b2bff;
-	z[2] = 0x6fc4eae712536c35;
-	z[1] = 0x1ce9ae78b2be6d98;
-	z[0] = 0xe6d9a1e9581256d9;
+	y[0] = 0xdec052f5ad741c8f;
+	y[1] = 0x87470892b0bf808a;
+	y[2] = 0xd2ee751373c16add;
+	z[0] = 0xde68d8aa8fe00965;
+	z[1] = 0xe49073144c5db335;
+	z[2] = 0x2beb817fad246b83;
 	
 
-	ubigintSub (&x, y, z, 3);
+	//ubigintSub (&y, z, y, 3);
 
-	//fixmul_int (x.data, y.data, z.data, 3);
+	bigintMul (&xh, &x, y, z, 3);
 	
 	
 	free (x);
