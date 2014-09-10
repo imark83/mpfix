@@ -47,6 +47,74 @@ ubigintAdd:
 	movq	%r9, -8(%rdi, %rcx, 8)		# rop[size-1] = %r9
 
 	movq	$0x0, %rax
+	cmovcq	%r8, %rax			# store in %rax carry flag
+
+	decq	%rcx
+	jz	LUAddEnd			
+LUAddLoop:
+	movq	-8(%rsi, %rcx, 8), %r9		# %r9 = op1[size-1]
+	
+	adcq	-8(%rdx, %rcx, 8), %r9		# %r9 += op2[size-1]
+	movq	%r9, -8(%rdi, %rcx, 8)		# rop[size-1-i] == %r9 WITH CARRY!
+
+	movq	$0x0, %rax
+	cmovcq	%r8, %rax			# store in %rax carry flag
+
+	decq	%rcx				# substract 1 from counter and repeat
+	jnz	LUAddLoop
+LUAddEnd:
+	ret
+
+
+
+
+.globl bigintAdd
+.type bigintAdd, @function
+bigintAdd:
+
+	# rop = op1 + op2
+	# char bigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+	# returns overflow flag (0 or 1)
+
+	#########################################
+	#
+	# INPUT ARGUMENTS
+	# rdi -> &rop
+	# rsi -> op1
+	# rdx -> op2
+	# rcx -> size
+	#
+	#########################################	
+
+	#########################################
+	# 
+	# WORK FRAME
+	#
+	# rdi -> rop
+	# rsi -> op1
+	# rdx -> op2
+	# rcx -> size in quad words (also counter)
+	# r9  -> cumulative register for summation
+	# r8  -> constant value 1
+	# rax -> carry flag to return
+	# 
+	#########################################
+
+	
+	#compute rdix = rop
+	movq	(%rdi), %rdi
+	
+
+	# summation loop
+	# we use %rcx as counter. Start at (size) 
+	movq	$0x1, %r8			# carry flag value
+
+	movq	-8(%rsi, %rcx, 8), %r9		# %r9 = op1[size-1]
+	
+	addq	-8(%rdx, %rcx, 8), %r9		# %r9 += op2[size-1]
+	movq	%r9, -8(%rdi, %rcx, 8)		# rop[size-1] = %r9
+
+	movq	$0x0, %rax
 	cmovoq	%r8, %rax			# store in %rax carry flag
 
 	decq	%rcx
@@ -119,6 +187,77 @@ ubigintSub:
 	cmovcq	%r8, %rax			# store in %rax borrow flag
 
 	decq	%rcx
+	jz	LUSubEnd			
+LUSubLoop:
+	movq	-8(%rsi, %rcx, 8), %r9		# %r9 = op1[size-1]
+	
+	sbbq	-8(%rdx, %rcx, 8), %r9		# %r9 -= op2[size-1]
+	movq	%r9, -8(%rdi, %rcx, 8)		# rop[size-1-i] = %r9 WITH BORROW!
+
+	movq	$0x0, %rax
+	cmovcq	%r8, %rax			# store in %rax borrow flag
+
+	decq	%rcx				# substract 1 from counter and repeat
+	jnz	LUSubLoop
+LUSubEnd:
+	ret
+
+
+
+
+
+
+
+.globl bigintSub
+.type bigintSub, @function
+bigintSub:
+
+	# rop = op1 - op2
+	# char bigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+	# returns borrow flag (0 or 1)
+
+	#########################################
+	#
+	# INPUT ARGUMENTS
+	# rdi -> &rop
+	# rsi -> op1
+	# rdx -> op2
+	# rcx -> size
+	#
+	#########################################	
+
+	#########################################
+	# 
+	# WORK FRAME
+	#
+	# rdi -> rop
+	# rsi -> op1
+	# rdx -> op2
+	# rcx -> size in quad words (also counter)
+	# r9  -> cumulative register for substraction
+	# r8  -> constant value 1
+	# rax -> borrow flag to return
+	# 
+	#########################################
+
+	
+	#compute rdi = rop
+	movq	(%rdi), %rdi
+	
+
+	# summation loop
+	# we use %rcx as counter. Start at (size) 
+	movq	$0x1, %r8			# borrow flag value
+
+	movq	-8(%rsi, %rcx, 8), %r9		# %r9 = op1[size-1]
+	
+	subq	-8(%rdx, %rcx, 8), %r9		# %r9 -= op2[size-1]
+	movq	%r9, -8(%rdi, %rcx, 8)		# rop[size-1] = %r9
+
+	movq	$0x0, %rax
+	cmovoq	%r8, %rax			# store in %rax borrow flag
+
+	decq	%rcx
 	jz	LSubEnd			
 LSubLoop:
 	movq	-8(%rsi, %rcx, 8), %r9		# %r9 = op1[size-1]
@@ -127,7 +266,7 @@ LSubLoop:
 	movq	%r9, -8(%rdi, %rcx, 8)		# rop[size-1-i] = %r9 WITH BORROW!
 
 	movq	$0x0, %rax
-	cmovcq	%r8, %rax			# store in %rax borrow flag
+	cmovoq	%r8, %rax			# store in %rax borrow flag
 
 	decq	%rcx				# substract 1 from counter and repeat
 	jnz	LSubLoop

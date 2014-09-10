@@ -9,13 +9,17 @@ void bigintInit (bigint_t *x, int size) {
 	*x = (unsigned long int*) malloc (8*size);
 	int i;
 	for (i=0; i<size; i++)
-		(*x)[i] = 0;
+		(*x)[i] = 0x0;
 }
 
 
 char ubigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+char bigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
 char ubigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+char bigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
 void ubigintMul (ubigint_t *roph, ubigint_t *ropl, ubigint_t op1, ubigint_t op2, int size);
+
+
 void bigintMul (ubigint_t *roph, bigint_t *ropl, ubigint_t op1, ubigint_t op2, int size) {
 	ubigint_t auxh, auxl;
 	bigintInit (&auxh, size);
@@ -44,17 +48,12 @@ char* ubigintToStringX (ubigint_t op, int size) {
 	rop[0] = '0';
 	rop[1] = 'x';
 	for (i=0; i<size; i++)
-		sprintf (16*i+2+rop, "%lx", op[i]);
+		sprintf (16*i+2+rop, "%016lx", op[i]);
 	op[16*size+2] = '\0';
 	return rop;
 }
 
 
-char* ubigintToStringD (ubigint op, int size) {
-	int ndigits = (int) floor (64.0*size*0.301029995663981) + 1;
-	char *rop = 
-
-}
 
 int main () {
 	unsigned long int a;
@@ -63,16 +62,20 @@ int main () {
 	bigintInit (&x, 3);
 	bigintInit (&y, 3);
 	bigintInit (&z, 3);
-	y[0] = 0xdec052f5ad741c8f;
-	y[1] = 0x87470892b0bf808a;
-	y[2] = 0xd2ee751373c16add;
-	z[0] = 0xde68d8aa8fe00965;
-	z[1] = 0xe49073144c5db335;
-	z[2] = 0x2beb817fad246b83;
+	y[0] = 0x0;
+	y[1] = 0x0;
+	y[2] = 0x0;
+	z[0] = 0x0;
+	z[1] = 0x0;
+	z[2] = 0x1;
 	
 	printf ("y = %s\n", ubigintToStringX (y,3));
+	printf ("z = %s\n", ubigintToStringX (z,3));
 
-	//ubigintSub (&y, z, y, 3);
+	printf ("Unsigned carry = %hhi\n", ubigintSub (&x, y, z, 3));
+	printf ("x = %s\n", ubigintToStringX (x,3));
+	printf ("Signed overflow = %hhi\n", bigintSub (&x, y, z, 3));
+	printf ("x = %s\n", ubigintToStringX (x,3));
 
 	bigintMul (&xh, &x, y, z, 3);
 	
