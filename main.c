@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-
+#include "bigint.h"
 
 int main () {
-	unsigned long int a;
 	ubigint_t xh, x, y, z;
 	bigintInit (&xh, 3);
 	bigintInit (&x, 3);

@@ -402,3 +402,49 @@ LMulRopLoop:
 
 
 
+
+.globl ubigintCmp
+.type ubigintCmp, @function
+ubigintCmp:
+
+	# compares op1 and op2
+	# char ubigintCmp (ubigint_t op1, ubigint_t op2, int size);
+
+	#########################################
+	#
+	# INPUT ARGUMENTS
+	# rdi -> op1
+	# rsi -> op2
+	# rdx -> size
+	#
+	#########################################	
+
+	#########################################
+	# 
+	# WORK FRAME
+	# rdi -> op1
+	# rsi -> op2
+	# rdx -> size-1
+	# rcx -> counter
+	# r9  -> constant 1
+	# rax -> temporal storage and return value
+	#
+	#########################################
+
+	movq	$0x0, %rcx
+	movq	%0x1, %r8		# return flag value
+	dec	%rdx
+
+	cmpq	%rcx, %rdx
+	jz	LUCmpEnd
+	movq	(%rdi, %rcx, 8), %rax
+	cmpq	%rax, (%rsi, %rcx, 8)
+	jz
+		
+
+
+LUCmpEnd:
+	mov
+	cmpq	
+	
+
