@@ -74,7 +74,7 @@ char* ubigintToStringX (ubigint_t op, int size) {
 	rop[1] = 'x';
 	for (i=0; i<size; i++)
 		sprintf (16*i+2+rop, "%016lx", op[i]);
-	op[16*size+2] = '\0';
+	rop[16*size+2] = '\0';
 	return rop;
 }
 
