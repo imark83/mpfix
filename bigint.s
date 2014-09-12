@@ -402,49 +402,50 @@ LMulRopLoop:
 
 
 
+.globl shl_asm
+.type shl_asm, @function
+shl_asm:
 
-.globl ubigintCmp
-.type ubigintCmp, @function
-ubigintCmp:
-
-	# compares op1 and op2
-	# char ubigintCmp (ubigint_t op1, ubigint_t op2, int size);
+	# rop = rop << op, op < 64
+	# void shl_asm (ubigint_t *rop, int op, int size);
 
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> op1
-	# rsi -> op2
+	# rdi -> &rop
+	# rsi -> op
 	# rdx -> size
 	#
 	#########################################	
 
+
 	#########################################
 	# 
 	# WORK FRAME
-	# rdi -> op1
-	# rsi -> op2
-	# rdx -> size-1
-	# rcx -> counter
-	# r9  -> constant 1
-	# rax -> temporal storage and return value
 	#
+	# rdi -> rop
+	# rcx -> op (cl)
+	# rdx -> size-1
+	# rax -> counter
+	# rsi -> storage of source
+	# 
 	#########################################
 
-	movq	$0x0, %rcx
-	movq	%0x1, %r8		# return flag value
+	movq	(%rdi), %rdi
 	dec	%rdx
+	movq	%rsi, %rcx
+	movq	$0x0, %rax
+LSLoop:
 
-	cmpq	%rcx, %rdx
-	jz	LUCmpEnd
-	movq	(%rdi, %rcx, 8), %rax
-	cmpq	%rax, (%rsi, %rcx, 8)
-	jz
-		
+	movq	8(%rdi, %rax, 8), %rsi
+	shldq	%cl, %rsi, (%rdi, %rax, 8)
+	inc	%rax
+	cmpq	%rax, %rdx
+	jne	LSLoop
+
+	shlq	%cl, (%rdi, %rax, 8)
+
+	ret
 
 
-LUCmpEnd:
-	mov
-	cmpq	
-	
 

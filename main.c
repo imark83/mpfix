@@ -2,29 +2,37 @@
 #include <stdlib.h>
 #include "bigint.h"
 
+
+
+void bigintRand (bigint_t *op, int size) {
+	int k;
+	for (k=0; k<size; k++) (*op)[k] = ((long int) rand() << 32) + rand();
+}
+
+void ubigintDiv (ubigint_t rop, ubigint_t rem, ubigint_t op1, ubigint_t op2, int size) {
+
+
+}
+
+
 int main () {
-	ubigint_t xh, x, y, z;
-	bigintInit (&xh, 3);
-	bigintInit (&x, 3);
-	bigintInit (&y, 3);
-	bigintInit (&z, 3);
-	y[0] = 0x0;
-	y[1] = 0x0;
-	y[2] = 0x0;
-	z[0] = 0x0;
-	z[1] = 0x0;
-	z[2] = 0x1;
-	
-	printf ("y = %s\n", ubigintToStringX (y,3));
-	printf ("z = %s\n", ubigintToStringX (z,3));
+	ubigint_t x, y, z;
+	int size = 1000;
+	int k;
 
-	printf ("Unsigned carry = %hhi\n", ubigintSub (&x, y, z, 3));
-	printf ("x = %s\n", ubigintToStringX (x,3));
-	printf ("Signed overflow = %hhi\n", bigintSub (&x, y, z, 3));
-	printf ("x = %s\n", ubigintToStringX (x,3));
+	bigintInit (&x, size);
+	bigintInit (&y, size);
+	bigintInit (&z, size);
 
-	bigintMul (&xh, &x, y, z, 3);
+	bigintRand (&x, size);
+	bigintRand (&y, size);
 	
+	ubigintAdd (&z, x, y, size);
+	printf ("z = %s\n", ubigintToStringX (z, size));
+	for (k=0; k<1000; k++)
+		ubigintAdd (&z, z, x, size);
+
+	printf ("z = %s\n", ubigintToStringX (z, size));
 	
 	free (x);
 	free (y);

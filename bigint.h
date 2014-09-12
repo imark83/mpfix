@@ -26,3 +26,20 @@ void bigintMul (ubigint_t *roph, bigint_t *ropl, ubigint_t op1, ubigint_t op2, i
 // CREATES A STRING CONTAININT HEX REPRESENTATION OF OP
 char* ubigintToStringX (ubigint_t op, int size);
 
+// COMPARES TWO UNSIGNED INTEGERS. OP1 > OP2 -> 1;  OP2 > OP1 -> -1;  OP1 = OP2 -> 0
+char ubigintCmp (ubigint_t op1, ubigint_t op2, int size);
+
+// COMPARES TWO NSIGNED INTEGERS. OP1 > OP2 -> 1;  OP2 > OP1 -> -1;  OP1 = OP2 -> 0
+char bigintCmp (bigint_t op1, bigint_t op2, int size);
+
+// SHIFT LEFT ROP A NUMBER OF BITS < 64
+void shl_asm (ubigint_t *rop, int op, int size);
+
+// SHIFT LEFT ROP A NUMBER OF BITS
+void shl (ubigint_t *rop, unsigned int op, int size);
+
+
+
+
+
+
