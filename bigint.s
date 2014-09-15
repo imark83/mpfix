@@ -5,13 +5,13 @@
 ubigintAdd:
 
 	# rop = op1 + op2
-	# char ubigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+	# char ubigintAdd (ubigint_t rop, ubigint_t op1, ubigint_t op2, int size);
 	# returns carry flag (0 or 1)
 
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> &rop
+	# rdi -> rop
 	# rsi -> op1
 	# rdx -> op2
 	# rcx -> size
@@ -32,9 +32,6 @@ ubigintAdd:
 	# 
 	#########################################
 
-	
-	#compute rdix = rop
-	movq	(%rdi), %rdi
 	
 
 	# summation loop
@@ -73,13 +70,13 @@ LUAddEnd:
 bigintAdd:
 
 	# rop = op1 + op2
-	# char bigintAdd (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+	# char bigintAdd (ubigint_t rop, ubigint_t op1, ubigint_t op2, int size);
 	# returns overflow flag (0 or 1)
 
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> &rop
+	# rdi -> rop
 	# rsi -> op1
 	# rdx -> op2
 	# rcx -> size
@@ -100,9 +97,6 @@ bigintAdd:
 	# 
 	#########################################
 
-	
-	#compute rdix = rop
-	movq	(%rdi), %rdi
 	
 
 	# summation loop
@@ -142,13 +136,13 @@ LAddEnd:
 ubigintSub:
 
 	# rop = op1 - op2
-	# char ubigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+	# char ubigintSub (ubigint_t rop, ubigint_t op1, ubigint_t op2, int size);
 	# returns borrow flag (0 or 1)
 
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> &rop
+	# rdi -> rop
 	# rsi -> op1
 	# rdx -> op2
 	# rcx -> size
@@ -169,9 +163,6 @@ ubigintSub:
 	# 
 	#########################################
 
-	
-	#compute rdi = rop
-	movq	(%rdi), %rdi
 	
 
 	# summation loop
@@ -213,13 +204,13 @@ LUSubEnd:
 bigintSub:
 
 	# rop = op1 - op2
-	# char bigintSub (ubigint_t *rop, ubigint_t op1, ubigint_t op2, int size);
+	# char bigintSub (ubigint_t rop, ubigint_t op1, ubigint_t op2, int size);
 	# returns borrow flag (0 or 1)
 
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> &rop
+	# rdi -> rop
 	# rsi -> op1
 	# rdx -> op2
 	# rcx -> size
@@ -240,9 +231,6 @@ bigintSub:
 	# 
 	#########################################
 
-	
-	#compute rdi = rop
-	movq	(%rdi), %rdi
 	
 
 	# summation loop
@@ -283,13 +271,13 @@ ubigintMul:
 	pushq	%rbx
 
 	# roph:ropl = op1 * op2
-	# void ubigintMul (ubigint_t *roph, ubigint_t *ropl, ubigint_t op1, ubigint_t op2, int size);
+	# void ubigintMul (ubigint_t roph, ubigint_t ropl, ubigint_t op1, ubigint_t op2, int size);
 
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> &roph
-	# rsi -> &ropl
+	# rdi -> roph
+	# rsi -> ropl
 	# rdx -> op1
 	# rcx -> op2
 	# r8  -> size
@@ -319,11 +307,6 @@ ubigintMul:
 	movq	%rdx, %r8
 	movq	%rcx, %r9
 
-
-	#compute rdi = roph
-	movq	(%rdi), %rdi
-	#compute rds = ropl
-	movq	(%rsi), %rsi
 
 	# allocate memory for partial rop variable (2*size blocks) in stack
 	salq	$0x4, %r11			# r11 = 16*size bytes
@@ -412,7 +395,7 @@ shl_asm:
 	#########################################
 	#
 	# INPUT ARGUMENTS
-	# rdi -> &rop
+	# rdi -> rop
 	# rsi -> op
 	# rdx -> size
 	#
@@ -431,7 +414,6 @@ shl_asm:
 	# 
 	#########################################
 
-	movq	(%rdi), %rdi
 	dec	%rdx
 	movq	%rsi, %rcx
 	movq	$0x0, %rax
