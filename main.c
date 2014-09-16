@@ -27,8 +27,8 @@ char* ubigintToString (ubigint_t op, int size) {
 	for (i=0; i<decSize; i++) rop[i] = ' ';
 
 	for (i=0; i<decSize; i++) {
-		if (i==22)
-			printf ("caca\n");
+		//if (i==22)
+		//	printf ("caca\n");
 		ubigintDiv (copy, r, copy, d, size);
 		rop[decSize-i-1] = r[size-1] + '0';
 	}
@@ -54,15 +54,20 @@ int main () {
 	bigintInit (&r, size);
 
 
-	x[2] = 0x003a15ebd0538d18;
-	y[2] = 0xa;
+	bigintRand (x, size);
+	bigintRand (y, size);
+	x[0] = 0;
 
-	ubigintDiv (q, r, x, y, size);
+	ubigintDiv (q, r, y, x, size);
 
 	printf ("x = %s\n", ubigintToStringX (x, size));
+	printf ("x = %s\n", ubigintToString (x, size));
 	printf ("y = %s\n", ubigintToStringX (y, size));
+	printf ("y = %s\n", ubigintToString (y, size));
 	printf ("q = %s\n", ubigintToStringX (q, size));
+	printf ("q = %s\n", ubigintToString (q, size));
 	printf ("r = %s\n", ubigintToStringX (r, size));
+	printf ("r = %s\n", ubigintToString (r, size));
 
 	free (x);
 	free (y);

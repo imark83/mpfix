@@ -105,14 +105,13 @@ void ubigintDiv (ubigint_t rop, ubigint_t rem, ubigint_t op1, ubigint_t op2, int
 		aux2[size+j] = op2[j];
 	}
 	// initialize c
-	c[size-1] = 1;	
-
+	c[size-1] = 3;
 
 	for (j=0; j<size; j++) {
 		next[j] = c[j];
 		next[size+j] = d[j];
 	}
-	
+
 	do {
 		// STAGE 1
 		for (j=0; j<size; j++) {
@@ -150,26 +149,20 @@ void ubigintDiv (ubigint_t rop, ubigint_t rem, ubigint_t op1, ubigint_t op2, int
 		}
 	} while (loop);
 
+	ubigintMul (aux2, aux2+size, c, op1, size);	// aux2 stores quotient candidate
+	ubigintMul (aux4, aux4+size, aux2, op2, size);
+	ubigintSub (aux4, op1, aux4+size, size);	// aux4 stores remainder candidate
 
-	// NO FUNCIONA
-
-	ubigintMul (aux4, aux4+size, op1, c, size);		// temporary rop
-	ubigintMul (aux2, aux2+size, op1, d, size);		// temporary ropL
-
-	// check if carry
-	if (ubigintAdd (aux4+2*size, aux2, aux4+size, size)) {
-		for (j=0; j<size-1; j++) 
-			aux2[j] = 0;
-		aux2[size-1] = 1;
-		ubigintAdd (aux4, aux4, aux2, size);
+	while (ubigintCmp (aux4, op2, size) >= 0) {
+		ubigintInc (aux2, size);			// update quotient
+		ubigintMul (aux4, aux4+size, aux2, op2, size);
+		ubigintSub (aux4, op1, aux4+size, size);	// aux4 stores remainder candidate
 	}
-		
 
-	ubigintMul (aux2, aux2+size, op2, aux4, size);
-	ubigintSub (rem, op1, aux2+size, size);
-
-	for (j=0; j<size; j++)
-		rop[j] = aux4[j];
+	for (j=0; j<size; j++) {
+		rop[j] = aux2[j];
+		rem[j] = aux4[j];
+	}
 
 
 	free (c);

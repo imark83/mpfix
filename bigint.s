@@ -390,7 +390,7 @@ LMulRopLoop:
 shl_asm:
 
 	# rop = rop << op, op < 64
-	# void shl_asm (ubigint_t *rop, int op, int size);
+	# void shl_asm (ubigint_t rop, int op, int size);
 
 	#########################################
 	#
@@ -428,6 +428,81 @@ LSLoop:
 	shlq	%cl, (%rdi, %rax, 8)
 
 	ret
+
+
+.globl ubigintInc
+.type ubigintInc, @function
+ubigintInc:
+
+	# rop = rop + 1
+	# char ubigintInc (ubigint_t rop, int size);
+	# return carry flag
+
+	#########################################
+	#
+	# INPUT ARGUMENTS
+	# rdi -> rop
+	# rsi -> size
+	#
+	#########################################	
+
+	movq	$0x0, %rax
+LUIncLoop:
+	dec	%rsi
+	jz	LUIncEnd
+	addq	$0x1, (%rdi, %rsi, 8)
+	jc	LUIncLoop
+	ret
+
+LUIncEnd:
+	movq	$0x1, %rcx
+	addq	$0x1, (%rdi)
+	movq	$0x0, %rax
+	cmovcq	%rcx, %rax	
+	
+
+	ret
+
+
+
+
+.globl ubigintDec
+.type ubigintDec, @function
+ubigintDec:
+
+	# rop = rop - 1
+	# char ubigintDec (ubigint_t rop, int size);
+	# return borrow flag
+
+	#########################################
+	#
+	# INPUT ARGUMENTS
+	# rdi -> rop
+	# rsi -> size
+	#
+	#########################################	
+
+	movq	$0x0, %rax
+LUDecLoop:
+	decq	%rsi
+	jz	LUDecEnd
+	subq	$0x1, (%rdi, %rsi, 8)
+	jc	LUDecLoop
+	ret
+
+LUDecEnd:
+	movq	$0x1, %rcx
+	subq	$0x1, (%rdi)
+	movq	$0x0, %rax
+	cmovcq	%rcx, %rax	
+	
+
+	ret
+
+
+
+
+
 
 
 

@@ -44,7 +44,11 @@ void shl_asm (ubigint_t rop, int op, int size);
 // SHIFT LEFT ROP A NUMBER OF BITS
 void shl (ubigint_t rop, unsigned int op, int size);
 
+// INCREMENTS ROP BY 1
+char ubigintInc (ubigint_t rop, int size);
 
+// DECREMENTS ROP BY 1
+char ubigintDec (ubigint_t rop, int size);
 
 
 
